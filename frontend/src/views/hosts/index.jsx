@@ -112,7 +112,7 @@ export default function Hosts() {
 
   return (
     <>
-      <Box sx={{ mt: 3 }}>
+      <Box sx={{ mt: 2 }}>
         <MainCard
           title="Hosts Overview"
           secondary={
@@ -121,7 +121,7 @@ export default function Hosts() {
             </Button>
           }
         >
-          <Box sx={{ mt: 2, mb: 3 }}>
+          <Box sx={{ mt: 2, mb: 2 }}>
             <Stack direction="row" gap={2} alignItems="center">
               <TextField
                 size="small"

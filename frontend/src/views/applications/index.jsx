@@ -4,12 +4,12 @@ import Typography from '@mui/material/Typography';
 // project imports
 import MainCard from 'ui-component/cards/MainCard';
 
-// ==============================|| SAMPLE PAGE ||============================== //
+// ==============================|| APPLICATIONS PAGE ||============================== //
 
-export default function SamplePage() {
+export default function Applciations() {
   return (
     <MainCard title="Sample Card">
-      <Typography variant="body2">Sample Page</Typography>
+      <Typography variant="body2">Applications</Typography>
     </MainCard>
   );
 }

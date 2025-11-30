@@ -7,8 +7,8 @@ import Grid from '@mui/material/Grid';
 import EarningCard from './EarningCard';
 import PopularCard from './PopularCard';
 import TotalOrderLineChartCard from './TotalOrderLineChartCard';
-import TotalIncomeDarkCard from '../../../ui-component/cards/TotalIncomeDarkCard';
-import TotalIncomeLightCard from '../../../ui-component/cards/TotalIncomeLightCard';
+import TotalIncomeDarkCard from '../../ui-component/cards/TotalIncomeDarkCard';
+import TotalIncomeLightCard from '../../ui-component/cards/TotalIncomeLightCard';
 import TotalGrowthBarChart from './TotalGrowthBarChart';
 
 import { gridSpacing } from 'store/constant';

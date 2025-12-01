@@ -43,7 +43,7 @@ export default function Hosts() {
   const [search, setSearch] = useState('');
   const [envFilter, setEnvFilter] = useState('All');
 
-  // 🔥 Load real API hosts
+  // Load real API hosts
   useEffect(() => {
     fetch('/api/hosts')
       .then((res) => res.json())
@@ -60,7 +60,7 @@ export default function Hosts() {
     return matchesSearch && matchesEnv;
   });
 
-  // 🔥 Trigger immediate discovery
+  // Trigger immediate discovery
   const triggerDiscovery = async (host) => {
     try {
       const res = await fetch('/api/agent/send-command', {
@@ -80,7 +80,7 @@ export default function Hosts() {
     }
   };
 
-  // 🔥 Navigate to services list page
+  // Navigate to services list page
   const viewServices = (host) => {
     navigate(`/services/${host.server_id}`);
   };

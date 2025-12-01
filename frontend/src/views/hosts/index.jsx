@@ -15,11 +15,17 @@ import {
   Stack
 } from '@mui/material';
 
+import { useNavigate } from 'react-router-dom';
+
 import SearchIcon from '@mui/icons-material/Search';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
+import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
+import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 
 import MainCard from 'ui-component/cards/MainCard';
 import RegisterHostModal from './RegisterHostModal';
+import InstallAgentModal from './InstallAgentModal';
 
 const statusColor = {
   Healthy: 'success',
@@ -29,77 +35,20 @@ const statusColor = {
 };
 
 export default function Hosts() {
+  const navigate = useNavigate();
+
   const [openRegister, setOpenRegister] = useState(false);
+  const [installModal, setInstallModal] = useState({ open: false, host: null });
   const [hosts, setHosts] = useState([]);
   const [search, setSearch] = useState('');
   const [envFilter, setEnvFilter] = useState('All');
 
-  const sampleHosts = [
-    {
-      server_id: 1,
-      hostname: 'prod-app-01',
-      ip_address: '10.10.1.21',
-      username: 'ubuntu',
-      environment: 'Production',
-      status: 'Healthy',
-      ssh_port: 22,
-      created_at: '2025-02-12T14:22:33Z'
-    },
-    {
-      server_id: 2,
-      hostname: 'prod-db-01',
-      ip_address: '10.10.1.10',
-      username: 'ubuntu',
-      environment: 'Production',
-      status: 'Warning',
-      ssh_port: 22,
-      created_at: '2025-02-12T14:22:33Z'
-    },
-    {
-      server_id: 3,
-      hostname: 'prod-cache-01',
-      ip_address: '10.10.1.31',
-      username: 'ubuntu',
-      environment: 'Production',
-      status: 'Critical',
-      ssh_port: 22,
-      created_at: '2025-02-12T14:22:33Z'
-    },
-    {
-      server_id: 4,
-      hostname: 'staging-app-01',
-      ip_address: '10.20.2.11',
-      username: 'ubuntu',
-      environment: 'Staging',
-      status: 'Healthy',
-      ssh_port: 22,
-      created_at: '2025-02-12T14:22:33Z'
-    },
-    {
-      server_id: 5,
-      hostname: 'dev-app-01',
-      ip_address: '10.30.3.14',
-      username: 'ubuntu',
-      environment: 'Dev',
-      status: 'Healthy',
-      ssh_port: 22,
-      created_at: '2025-02-12T14:22:33Z'
-    },
-    {
-      server_id: 6,
-      hostname: 'dev-utils-01',
-      ip_address: '10.30.3.22',
-      username: 'ubuntu',
-      environment: 'Dev',
-      status: 'Warning',
-      ssh_port: 22,
-      created_at: '2025-02-12T14:22:33Z'
-    }
-  ];
-
-  // Load sample data directly
+  // 🔥 Load real API hosts
   useEffect(() => {
-    setHosts(sampleHosts);
+    fetch('/api/hosts')
+      .then((res) => res.json())
+      .then((data) => setHosts(data))
+      .catch((err) => console.error('Failed to load hosts:', err));
   }, []);
 
   const filteredHosts = hosts.filter((h) => {
@@ -107,8 +56,34 @@ export default function Hosts() {
       !search || h.hostname.toLowerCase().includes(search.toLowerCase()) || h.ip_address.toLowerCase().includes(search.toLowerCase());
 
     const matchesEnv = envFilter === 'All' || h.environment === envFilter;
+
     return matchesSearch && matchesEnv;
   });
+
+  // 🔥 Trigger immediate discovery
+  const triggerDiscovery = async (host) => {
+    try {
+      const res = await fetch('/api/agent/send-command', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ server_id: host.server_id, command: 'discover_now' })
+      });
+
+      if (res.ok) {
+        alert(`Discovery triggered for ${host.hostname}`);
+      } else {
+        alert('Failed to trigger discovery');
+      }
+    } catch (err) {
+      console.error('Discovery error:', err);
+      alert('Error triggering discovery');
+    }
+  };
+
+  // 🔥 Navigate to services list page
+  const viewServices = (host) => {
+    navigate(`/services/${host.server_id}`);
+  };
 
   return (
     <>
@@ -121,7 +96,8 @@ export default function Hosts() {
             </Button>
           }
         >
-          <Box sx={{ mt: 2, mb: 2 }}>
+          {/* Search + Filters */}
+          <Box sx={{ mt: 2, mb: 3 }}>
             <Stack direction="row" gap={2} alignItems="center">
               <TextField
                 size="small"
@@ -150,6 +126,7 @@ export default function Hosts() {
             </Stack>
           </Box>
 
+          {/* Hosts Table */}
           <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
             <Table>
               <TableHead>
@@ -159,32 +136,75 @@ export default function Hosts() {
                   <TableCell>Environment</TableCell>
                   <TableCell>SSH User</TableCell>
                   <TableCell>Status</TableCell>
-                  <TableCell>SSH Port</TableCell>
-                  <TableCell>Created At</TableCell>
+                  <TableCell>Agent</TableCell>
+                  <TableCell>Actions</TableCell>
                 </TableRow>
               </TableHead>
+
               <TableBody>
                 {filteredHosts.map((h) => (
                   <TableRow key={h.server_id} hover>
                     <TableCell>
                       <Typography fontWeight={600}>{h.hostname}</Typography>
                     </TableCell>
+
                     <TableCell>{h.ip_address}</TableCell>
                     <TableCell>{h.environment}</TableCell>
                     <TableCell>{h.username}</TableCell>
+
                     <TableCell>
-                      <Chip label={h.status || 'Unknown'} size="small" color={statusColor[h.status || 'Unknown']} />
+                      <Chip label={h.status || 'Unknown'} size="small" color={statusColor[h.status] || 'default'} />
                     </TableCell>
-                    <TableCell>{h.ssh_port}</TableCell>
-                    <TableCell>{h.created_at ? new Date(h.created_at).toLocaleString() : '-'}</TableCell>
+
+                    <TableCell>
+                      <Chip
+                        label={h.agent_installed ? 'Installed' : 'Not Installed'}
+                        color={h.agent_installed ? 'success' : 'warning'}
+                        size="small"
+                      />
+                    </TableCell>
+
+                    <TableCell>
+                      {/* Install Agent */}
+                      {!h.agent_installed && (
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          startIcon={<CloudDownloadIcon />}
+                          sx={{ mr: 1 }}
+                          onClick={() => setInstallModal({ open: true, host: h })}
+                        >
+                          Install Agent
+                        </Button>
+                      )}
+
+                      {/* View Services */}
+                      {h.agent_installed && (
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          startIcon={<VisibilityIcon />}
+                          sx={{ mr: 1 }}
+                          onClick={() => viewServices(h)}
+                        >
+                          View Services
+                        </Button>
+                      )}
+
+                      {/* Trigger Discovery */}
+                      {h.agent_installed && (
+                        <Button variant="contained" size="small" startIcon={<RocketLaunchIcon />} onClick={() => triggerDiscovery(h)}>
+                          Discover
+                        </Button>
+                      )}
+                    </TableCell>
                   </TableRow>
                 ))}
+
                 {filteredHosts.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={7}>
-                      <Typography align="center" color="text.secondary">
-                        No hosts registered yet.
-                      </Typography>
+                    <TableCell colSpan={7} align="center">
+                      <Typography color="text.secondary">No hosts registered yet.</Typography>
                     </TableCell>
                   </TableRow>
                 )}
@@ -194,11 +214,15 @@ export default function Hosts() {
         </MainCard>
       </Box>
 
+      {/* Register Host Modal */}
       <RegisterHostModal
         open={openRegister}
         onClose={() => setOpenRegister(false)}
         onRegistered={(newHost) => setHosts((prev) => [newHost, ...prev])}
       />
+
+      {/* Install Agent Modal */}
+      <InstallAgentModal open={installModal.open} host={installModal.host} onClose={() => setInstallModal({ open: false, host: null })} />
     </>
   );
 }

@@ -47,12 +47,12 @@ const MainRoutes = {
           element: <DashboardDefault />
         },
         {
-          path: 'applications',
-          element: <Applications />
-        },
-        {
           path: 'hosts',
           element: <Hosts />
+        },
+        {
+          path: 'applications',
+          element: <Applications />
         },
         {
           path: 'application-services',

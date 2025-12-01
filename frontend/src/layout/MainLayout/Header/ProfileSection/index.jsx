@@ -22,7 +22,6 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 
 // project imports
-import UpgradePlanCard from './UpgradePlanCard';
 import MainCard from 'ui-component/cards/MainCard';
 import Transitions from 'ui-component/extended/Transitions';
 import useConfig from 'hooks/useConfig';
@@ -39,7 +38,6 @@ export default function ProfileSection() {
     state: { borderRadius }
   } = useConfig();
 
-  const [sdm, setSdm] = useState(true);
   const [value, setValue] = useState('');
   const [notification, setNotification] = useState(false);
   const [open, setOpen] = useState(false);
@@ -121,7 +119,7 @@ export default function ProfileSection() {
                         <Stack direction="row" sx={{ alignItems: 'center', gap: 0.5 }}>
                           <Typography variant="h4">Good Morning,</Typography>
                           <Typography component="span" variant="h4" sx={{ fontWeight: 400 }}>
-                            Johne Doe
+                            Nebula
                           </Typography>
                         </Stack>
                         <Typography variant="subtitle2">Project Admin</Typography>
@@ -152,15 +150,10 @@ export default function ProfileSection() {
                         '&::-webkit-scrollbar': { width: 5 }
                       }}
                     >
-                      <UpgradePlanCard />
                       <Divider />
                       <Card sx={{ bgcolor: 'primary.light', my: 2 }}>
                         <CardContent>
                           <Stack sx={{ gap: 3 }}>
-                            <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
-                              <Typography variant="subtitle1">Start DND Mode</Typography>
-                              <Switch color="primary" checked={sdm} onChange={(e) => setSdm(e.target.checked)} name="sdm" size="small" />
-                            </Stack>
                             <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
                               <Typography variant="subtitle1">Allow Notifications</Typography>
                               <Switch checked={notification} onChange={(e) => setNotification(e.target.checked)} name="sdm" size="small" />
@@ -192,7 +185,7 @@ export default function ProfileSection() {
                           <ListItemText
                             primary={
                               <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
-                                <Typography variant="body2">Social Profile</Typography>
+                                <Typography variant="body2">Profile</Typography>
                                 <Chip
                                   slotProps={{
                                     label: { sx: { mt: 0.25 } }

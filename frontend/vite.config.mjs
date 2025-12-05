@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => {
       port: PORT,
       host: true,
 
-      // 🔥 Added proxy for backend on port 9000
+      //  Added proxy for backend on port 9000
       proxy: {
         "/api": {
           target: "http://localhost:9000",

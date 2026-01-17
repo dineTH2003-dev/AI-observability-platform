@@ -15,17 +15,17 @@ export default defineConfig(({ mode }) => {
 
       //  Added proxy for backend on port 9000
       proxy: {
-        "/api": {
-          target: "http://localhost:9000",
+        '/api': {
+          target: 'http://localhost:9000',
           changeOrigin: true,
           secure: false
         },
-        "/uploads": {
-          target: "http://localhost:9000",
+        '/uploads': {
+          target: 'http://localhost:9000',
           changeOrigin: true
         },
-        "/static": {
-          target: "http://localhost:9000",
+        '/static': {
+          target: 'http://localhost:9000',
           changeOrigin: true
         }
       }
@@ -41,7 +41,7 @@ export default defineConfig(({ mode }) => {
     },
 
     define: {
-      global: "window"
+      global: 'window'
     },
 
     resolve: {

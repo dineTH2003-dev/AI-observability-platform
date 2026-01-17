@@ -1,33 +1,19 @@
 import { useEffect, useState } from 'react';
-import {
-  Box,
-  Typography,
-  TextField,
-  MenuItem,
-  Button,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-  Chip,
-  Paper,
-  Stack
-} from '@mui/material';
+import { Box, TextField, MenuItem, Button, Table, TableHead, TableRow, TableCell, TableBody, Chip, Paper, Stack } from '@mui/material';
 
 import { useNavigate } from 'react-router-dom';
 
 import SearchIcon from '@mui/icons-material/Search';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
-import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 
 import MainCard from 'ui-component/cards/MainCard';
 import RegisterHostModal from './RegisterHostModal';
 import InstallAgentModal from './InstallAgentModal';
 
-const statusColor = {
+/* USED NOW — HEALTH STATUS COLOR */
+const hostStatusColor = {
   Healthy: 'success',
   Warning: 'warning',
   Critical: 'error',
@@ -43,47 +29,31 @@ export default function Hosts() {
   const [search, setSearch] = useState('');
   const [envFilter, setEnvFilter] = useState('All');
 
-  // Load real API hosts
-  useEffect(() => {
-    fetch('/api/hosts')
-      .then((res) => res.json())
-      .then((data) => setHosts(data))
-      .catch((err) => console.error('Failed to load hosts:', err));
-  }, []);
-
-  const filteredHosts = hosts.filter((h) => {
-    const matchesSearch =
-      !search || h.hostname.toLowerCase().includes(search.toLowerCase()) || h.ip_address.toLowerCase().includes(search.toLowerCase());
-
-    const matchesEnv = envFilter === 'All' || h.environment === envFilter;
-
-    return matchesSearch && matchesEnv;
-  });
-
-  // Trigger immediate discovery
-  const triggerDiscovery = async (host) => {
+  /* Auto refresh host list every 10s */
+  const loadHosts = async () => {
     try {
-      const res = await fetch('/api/agent/send-command', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ server_id: host.server_id, command: 'discover_now' })
-      });
-
-      if (res.ok) {
-        alert(`Discovery triggered for ${host.hostname}`);
-      } else {
-        alert('Failed to trigger discovery');
-      }
+      const res = await fetch('/api/hosts');
+      const data = await res.json();
+      setHosts(data);
     } catch (err) {
-      console.error('Discovery error:', err);
-      alert('Error triggering discovery');
+      console.error('Failed to load hosts:', err);
     }
   };
 
-  // Navigate to services list page
-  const viewServices = (host) => {
-    navigate(`/services/${host.server_id}`);
-  };
+  useEffect(() => {
+    loadHosts();
+    const timer = setInterval(loadHosts, 10000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const filteredHosts = hosts.filter((h) => {
+    const match =
+      !search || h.hostname?.toLowerCase().includes(search.toLowerCase()) || h.ip_address?.toLowerCase().includes(search.toLowerCase());
+
+    return match && (envFilter === 'All' || h.environment === envFilter);
+  });
+
+  const viewServices = (host) => navigate(`/services/${host.server_id}`);
 
   return (
     <>
@@ -96,9 +66,8 @@ export default function Hosts() {
             </Button>
           }
         >
-          {/* Search + Filters */}
           <Box sx={{ mt: 2, mb: 3 }}>
-            <Stack direction="row" gap={2} alignItems="center">
+            <Stack direction="row" gap={2}>
               <TextField
                 size="small"
                 placeholder="Search hosts..."
@@ -107,37 +76,35 @@ export default function Hosts() {
                 InputProps={{
                   startAdornment: <SearchIcon fontSize="small" sx={{ color: 'text.secondary', mr: 1 }} />
                 }}
-                sx={{ width: 280 }}
+                sx={{ width: 260 }}
               />
 
               <TextField
                 select
                 size="small"
                 label="Environment"
+                sx={{ width: 200 }}
                 value={envFilter}
                 onChange={(e) => setEnvFilter(e.target.value)}
-                sx={{ width: 200 }}
               >
                 <MenuItem value="All">All</MenuItem>
                 <MenuItem value="Production">Production</MenuItem>
                 <MenuItem value="Staging">Staging</MenuItem>
-                <MenuItem value="Dev">Development</MenuItem>
+                <MenuItem value="Dev">Dev</MenuItem>
               </TextField>
             </Stack>
           </Box>
 
-          {/* Hosts Table */}
-          <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
+          <Paper variant="outlined" sx={{ borderRadius: 2 }}>
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Host Name</TableCell>
-                  <TableCell>IP Address</TableCell>
+                  <TableCell>Host</TableCell>
+                  <TableCell>IP</TableCell>
                   <TableCell>Environment</TableCell>
-                  <TableCell>SSH User</TableCell>
-                  <TableCell>Status</TableCell>
+                  <TableCell>Health</TableCell> {/* ✔ FIXED */}
                   <TableCell>Agent</TableCell>
-                  <TableCell>Actions</TableCell>
+                  <TableCell align="right">Actions</TableCell>
                 </TableRow>
               </TableHead>
 
@@ -145,56 +112,39 @@ export default function Hosts() {
                 {filteredHosts.map((h) => (
                   <TableRow key={h.server_id} hover>
                     <TableCell>
-                      <Typography fontWeight={600}>{h.hostname}</Typography>
+                      <b>{h.hostname}</b>
                     </TableCell>
-
                     <TableCell>{h.ip_address}</TableCell>
                     <TableCell>{h.environment}</TableCell>
-                    <TableCell>{h.username}</TableCell>
 
+                    {/* hostStatusColor is USED HERE */}
                     <TableCell>
-                      <Chip label={h.status || 'Unknown'} size="small" color={statusColor[h.status] || 'default'} />
+                      <Chip label={h.status || 'Unknown'} size="small" color={hostStatusColor[h.status] || 'default'} />
                     </TableCell>
 
+                    {/* Agent installed? */}
                     <TableCell>
                       <Chip
-                        label={h.agent_installed ? 'Installed' : 'Not Installed'}
+                        label={h.agent_installed ? 'Online' : 'Not Installed'}
                         color={h.agent_installed ? 'success' : 'warning'}
                         size="small"
                       />
                     </TableCell>
 
-                    <TableCell>
-                      {/* Install Agent */}
-                      {!h.agent_installed && (
+                    <TableCell align="right">
+                      {!h.agent_installed ? (
                         <Button
                           variant="outlined"
                           size="small"
                           startIcon={<CloudDownloadIcon />}
-                          sx={{ mr: 1 }}
                           onClick={() => setInstallModal({ open: true, host: h })}
+                          sx={{ mr: 1 }}
                         >
                           Install Agent
                         </Button>
-                      )}
-
-                      {/* View Services */}
-                      {h.agent_installed && (
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          startIcon={<VisibilityIcon />}
-                          sx={{ mr: 1 }}
-                          onClick={() => viewServices(h)}
-                        >
+                      ) : (
+                        <Button variant="contained" size="small" startIcon={<VisibilityIcon />} onClick={() => viewServices(h)}>
                           View Services
-                        </Button>
-                      )}
-
-                      {/* Trigger Discovery */}
-                      {h.agent_installed && (
-                        <Button variant="contained" size="small" startIcon={<RocketLaunchIcon />} onClick={() => triggerDiscovery(h)}>
-                          Discover
                         </Button>
                       )}
                     </TableCell>
@@ -203,8 +153,8 @@ export default function Hosts() {
 
                 {filteredHosts.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={7} align="center">
-                      <Typography color="text.secondary">No hosts registered yet.</Typography>
+                    <TableCell colSpan={6} align="center">
+                      🚫 No Hosts Found
                     </TableCell>
                   </TableRow>
                 )}
@@ -214,14 +164,8 @@ export default function Hosts() {
         </MainCard>
       </Box>
 
-      {/* Register Host Modal */}
-      <RegisterHostModal
-        open={openRegister}
-        onClose={() => setOpenRegister(false)}
-        onRegistered={(newHost) => setHosts((prev) => [newHost, ...prev])}
-      />
+      <RegisterHostModal open={openRegister} onClose={() => setOpenRegister(false)} onRegistered={(h) => setHosts([h, ...hosts])} />
 
-      {/* Install Agent Modal */}
       <InstallAgentModal open={installModal.open} host={installModal.host} onClose={() => setInstallModal({ open: false, host: null })} />
     </>
   );

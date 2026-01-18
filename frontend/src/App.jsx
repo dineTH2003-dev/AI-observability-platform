@@ -1,25 +1,16 @@
-import { RouterProvider } from 'react-router-dom';
+import React from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
 
-// routing
-import router from 'routes';
-
-// project imports
-import NavigationScroll from 'layout/NavigationScroll';
-
-import ThemeCustomization from 'themes';
-
-// auth provider
-
-// ==============================|| APP ||============================== //
-
-export default function App() {
+import AdminLayout from "layouts/admin";
+import AuthLayout from "layouts/auth";
+const App = () => {
   return (
-    <ThemeCustomization>
-      <NavigationScroll>
-        <>
-          <RouterProvider router={router} />
-        </>
-      </NavigationScroll>
-    </ThemeCustomization>
+    <Routes>
+      <Route path="auth/*" element={<AuthLayout />} />
+      <Route path="admin/*" element={<AdminLayout />} />
+      <Route path="/" element={<Navigate to="/admin" replace />} />
+    </Routes>
   );
-}
+};
+
+export default App;

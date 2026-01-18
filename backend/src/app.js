@@ -8,6 +8,8 @@ const modelRoutes = require('./routes/model');
 const metricsRoutes = require('./routes/metrics');
 const hostRoutes = require('./routes/hosts');
 const agentRoutes = require('./routes/agent');
+const applicationRoutes = require('./routes/applications');
+
 
 const router = express.Router();
 
@@ -39,6 +41,7 @@ app.use('/api/hosts', hostRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/model', modelRoutes);
 app.use('/metrics', metricsRoutes);
+app.use('/api/applications', applicationRoutes);
 
 // global error handler
 app.use(errorHandler);

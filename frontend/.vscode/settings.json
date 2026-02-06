@@ -13,6 +13,11 @@
         "tanstack",
         "useReactTable",
         "xaxis",
-        "yaxis"
+        "yaxis",
+        "cooldown",
+        "aiops",
+        "nebula",
+        "radix",
+        "shadcn"
     ]
 }

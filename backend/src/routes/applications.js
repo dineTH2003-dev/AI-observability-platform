@@ -96,7 +96,7 @@ router.post("/register", async (req, res) => {
       description || null,
       version || null,
       server_id,
-      status || "ACTIVE",
+      status || "RUNNING",
     ];
 
     const result = await client.query(insertQuery, insertValues);
